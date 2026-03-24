@@ -1,6 +1,7 @@
 package com.co.istad.piseth.spring_web_mvc.controller;
 
 import com.co.istad.piseth.spring_web_mvc.dto.CreateProductRequest;
+import com.co.istad.piseth.spring_web_mvc.dto.PatchProductRequest;
 import com.co.istad.piseth.spring_web_mvc.dto.ProductResponse;
 import com.co.istad.piseth.spring_web_mvc.dto.UpdateProductRequest;
 import com.co.istad.piseth.spring_web_mvc.service.ProductService;
@@ -19,9 +20,9 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/{code}")
-    public ProductResponse getProductByCode(@PathVariable Integer code) {
+    public ProductResponse getProductByCode(@PathVariable String code) {
         log.info("Getting product with code: {}", code);
-        return null;
+        return productService.getProductByCode(code);
     }
 
     @GetMapping
@@ -40,21 +41,23 @@ public class ProductController {
     }
 
     @PutMapping("/{code}")
-    public ProductResponse updateByCode(@PathVariable Integer code,
-                                        @RequestBody UpdateProductRequest updateProductRequest) {
+    public ProductResponse updateByCode(@PathVariable String code,
+                                        @Valid @RequestBody UpdateProductRequest updateProductRequest) {
         log.info("Updating product with code: {} with {}", code, updateProductRequest);
-        return null;
+        return productService.updateProduct(code, updateProductRequest);
     }
 
     @PatchMapping("/{code}")
-    public ProductResponse patchByCode(@PathVariable Integer code,
-                                       @RequestBody UpdateProductRequest updateProductRequest) {
-        log.info("Patching product with code: {} with {}", code, updateProductRequest);
-        return null;
+    public ProductResponse patchByCode(@PathVariable String code,
+                                       @RequestBody PatchProductRequest patchProductRequest) {
+        log.info("Patching product with code: {} with {}", code, patchProductRequest);
+        return productService.patchProduct(code, patchProductRequest);
     }
 
     @DeleteMapping("/{code}")
-    public void deleteByCode(@PathVariable Integer code) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteByCode(@PathVariable String code) {
         log.info("Deleting product with code: {}", code);
+        productService.deleteProduct(code);
     }
 }

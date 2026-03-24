@@ -3,9 +3,12 @@ package com.co.istad.piseth.spring_web_mvc.service;
 import com.co.istad.piseth.spring_web_mvc.domain.Category;
 import com.co.istad.piseth.spring_web_mvc.domain.Product;
 import com.co.istad.piseth.spring_web_mvc.dto.CreateProductRequest;
+import com.co.istad.piseth.spring_web_mvc.dto.PatchProductRequest;
 import com.co.istad.piseth.spring_web_mvc.dto.ProductResponse;
+import com.co.istad.piseth.spring_web_mvc.dto.UpdateProductRequest;
 import com.co.istad.piseth.spring_web_mvc.mapper.ProductMapper;
 import com.co.istad.piseth.spring_web_mvc.repository.CategoryRepository;
+import com.co.istad.piseth.spring_web_mvc.repository.OrderLineRepository;
 import com.co.istad.piseth.spring_web_mvc.repository.ProductRepository;
 import com.co.istad.piseth.spring_web_mvc.util.GenerateUtil;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final OrderLineRepository orderLineRepository;
 
     @Override
     public ProductResponse createProduct(CreateProductRequest request) {
@@ -46,5 +50,67 @@ public class ProductServiceImpl implements ProductService {
         return productRepository
                 .findAll(pageable)
                 .map(productMapper::toProductResponse);
+    }
+
+    @Override
+    public ProductResponse updateProduct(String code, UpdateProductRequest request) {
+        Product product = productRepository.findById(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new RuntimeException("Category with id " + request.categoryId() + " not found!!!"));
+        product.setName(request.name());
+        product.setPrice(request.price());
+        product.setQuantity(request.quantity());
+        product.setDescription(request.description());
+        product.setCategory(category);
+        Product updatedProduct = productRepository.save(product);
+        return productMapper.toProductResponse(updatedProduct);
+    }
+
+    @Override
+    public void deleteProduct(String code) {
+        Product product = productRepository.findById(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        if (orderLineRepository.existsByProduct_Code(product.getCode()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product is already in use");
+        productRepository.delete(product);
+    }
+
+    @Override
+    public ProductResponse getProductByCode(String code) {
+        Product product = productRepository.findById(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        return productMapper.toProductResponse(product);
+    }
+
+    @Override
+    public ProductResponse patchProduct(String code, PatchProductRequest request) {
+        Product product = productRepository.findById(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        if (request.name() != null) {
+            if (request.name().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be empty");
+            }
+            product.setName(request.name());
+        }
+        if (request.price() != null) {
+            product.setPrice(request.price());
+        }
+        if (request.quantity() != null) {
+            product.setQuantity(request.quantity());
+        }
+        if (request.description() != null) {
+            if (request.description().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Description cannot be empty");
+            }
+            product.setDescription(request.description());
+        }
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new RuntimeException("Category with id " + request.categoryId() + " not found!!!"));
+            product.setCategory(category);
+        }
+        Product patchedProduct = productRepository.save(product);
+        return productMapper.toProductResponse(patchedProduct);
     }
 }
