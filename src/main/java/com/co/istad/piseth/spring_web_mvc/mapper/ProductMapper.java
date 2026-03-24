@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class ProductMapper {
     public ProductResponse toProductResponse(Product product) {
         return ProductResponse.builder()
-                .code(Integer.valueOf(product.getCode()))
+                .code(product.getCode())
                 .name(product.getName())
                 .price(product.getPrice())
                 .quantity(product.getQuantity())

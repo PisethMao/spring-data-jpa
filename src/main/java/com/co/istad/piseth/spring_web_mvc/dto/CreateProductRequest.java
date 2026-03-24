@@ -18,7 +18,6 @@ public record CreateProductRequest(
         @NotNull
         Integer quantity,
         String description,
-        boolean isAvailable,
         @Positive
         @NotNull
         Integer categoryId) {
