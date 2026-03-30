@@ -63,8 +63,9 @@ public class ProductServiceImpl implements ProductService {
         product.setQuantity(request.quantity());
         product.setDescription(request.description());
         product.setCategory(category);
-        Product updatedProduct = productRepository.save(product);
-        return productMapper.toProductResponse(updatedProduct);
+        productMapper.updateProductRequestToProduct(request, product, category);
+        product = productRepository.save(product);
+        return productMapper.toProductResponse(product);
     }
 
     @Override
@@ -78,9 +79,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse getProductByCode(String code) {
-        Product product = productRepository.findById(code)
+        return productRepository.findById(code)
+                .map(productMapper::toProductResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        return productMapper.toProductResponse(product);
     }
 
     @Override
@@ -110,7 +111,8 @@ public class ProductServiceImpl implements ProductService {
                     .orElseThrow(() -> new RuntimeException("Category with id " + request.categoryId() + " not found!!!"));
             product.setCategory(category);
         }
-        Product patchedProduct = productRepository.save(product);
-        return productMapper.toProductResponse(patchedProduct);
+        productMapper.patchProductRequestToProduct(request, product, product.getCategory());
+        product = productRepository.save(product);
+        return productMapper.toProductResponse(product);
     }
 }

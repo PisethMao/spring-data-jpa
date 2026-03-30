@@ -1,6 +1,5 @@
 package com.co.istad.piseth.spring_web_mvc.exception;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestControllerAdvice
-public class AppGlobalException {
+public class AppGlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ErrorResponse handleValidationException(MethodArgumentNotValidException e) {
